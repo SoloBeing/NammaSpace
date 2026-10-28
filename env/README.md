@@ -9,8 +9,8 @@ The GPU stages (`reconstruct`, `splat`) need an NVIDIA card from the RTX 20 seri
 3. **Ubuntu:**
    ```bash
    nvidia-smi                                   # must list your GPU
-   sudo apt update && sudo apt install -y build-essential git git-lfs wget
-   # install Miniconda: https://docs.anaconda.com/miniconda/
+   sudo apt update && sudo apt install -y build-essential git git-lfs wget libgl1 libglib2.0-0
+   # install Miniconda: https://docs.anaconda.com/miniconda/, then open a new terminal
    ```
 4. **Clone inside the Linux filesystem** (`~/AtomSpace`, not `/mnt/c/...`). Builds and frame I/O are much slower across the Windows mount.
    ```bash
@@ -21,7 +21,7 @@ The GPU stages (`reconstruct`, `splat`) need an NVIDIA card from the RTX 20 seri
    python env/smoke_test.py
    ```
 
-`setup_wsl.sh` reads the card's compute capability and builds gsplat and curope for it (`7.5` Turing, `8.6` Ampere, `8.9` Ada, `12.0` Blackwell).
+`setup_wsl.sh` reads the card's compute capability and builds gsplat for it (`7.5` Turing, `8.6` Ampere, `8.9` Ada, `12.0` Blackwell). gsplat and ASMK are pinned to fixed versions, and the script checks after each install step that PyTorch is still the CUDA 12.8 build.
 
 ## Common failures
 
@@ -31,3 +31,5 @@ The GPU stages (`reconstruct`, `splat`) need an NVIDIA card from the RTX 20 seri
 | `nvidia-smi` not found in WSL | Update the Windows NVIDIA driver, then run `wsl --shutdown` and reopen. |
 | gsplat build fails with an `nvcc` error | Run `conda activate atomspace` first so `CUDA_HOME` points at CUDA 12.8. |
 | curope build fails | Safe to ignore. MASt3R falls back to a slower PyTorch path. |
+| gsplat build dies with `Killed` | Out of RAM during compilation. Re-run with fewer jobs: `MAX_JOBS=2 bash env/setup_wsl.sh`. |
+| `ImportError: libGL.so.1` | `sudo apt install -y libgl1 libglib2.0-0` |

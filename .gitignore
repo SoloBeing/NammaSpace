@@ -28,8 +28,3 @@ scenes/*/ingest.json
 Thumbs.db
 .vscode/
 .idea/
-
-# Syncthing
-.stfolder/
-.stversions/
-.stignore
