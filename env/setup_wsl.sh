@@ -15,7 +15,7 @@ die() {
   exit 1
 }
 
-if [[ "$ROOT" == /mnt/* ]]; then
+if [[ "$ROOT" == /mnt/[a-z]/* ]]; then
   echo "WARNING: repo is at $ROOT, on the Windows filesystem. Builds and frame I/O will be very slow." >&2
   echo "         Clone inside the Linux filesystem instead, e.g. ~/AtomSpace." >&2
 fi
@@ -23,9 +23,13 @@ fi
 echo "==> Checking GPU"
 command -v nvidia-smi >/dev/null \
   || die "nvidia-smi not found. Install the latest NVIDIA driver on Windows; WSL2 picks it up automatically."
-GPU_INFO="$(nvidia-smi --query-gpu=name,compute_cap,memory.total --format=csv,noheader,nounits 2>&1 | head -n1)" \
-  || die "nvidia-smi failed: $GPU_INFO
+SMI_QUERY=(--query-gpu=name,compute_cap,memory.total --format=csv,noheader,nounits)
+# stdout only: WSL's nvidia-smi can print warnings on stderr that would otherwise be parsed as GPU data.
+if ! GPU_INFO="$(nvidia-smi "${SMI_QUERY[@]}" 2>/dev/null)"; then
+  die "nvidia-smi failed: $(nvidia-smi "${SMI_QUERY[@]}" 2>&1 | head -n3 || true)
        Update the Windows NVIDIA driver, then run 'wsl --shutdown' from PowerShell and reopen Ubuntu."
+fi
+GPU_INFO="${GPU_INFO%%$'\n'*}"
 IFS=',' read -r GPU_NAME CAP MEM_MIB <<<"$GPU_INFO"
 CAP="${CAP// /}"
 MEM_MIB="${MEM_MIB// /}"
@@ -47,11 +51,20 @@ for tool in gcc g++ git wget; do
 done
 # No grep -q: it exits early and pipefail would turn the match into a failure.
 ldconfig -p | grep 'libGL\.so\.1' >/dev/null || die "Missing libGL (needed by OpenCV). Run: $APT_HINT"
+ldconfig -p | grep 'libgthread-2\.0\.so\.0' >/dev/null || die "Missing GLib (needed by OpenCV). Run: $APT_HINT"
+git lfs version >/dev/null 2>&1 \
+  || die "Missing git-lfs (scene bundles are stored in LFS). Run: $APT_HINT
+       then, in the repo: git lfs install && git lfs pull"
 
 echo "==> Checking conda"
 CONDA_BIN="${CONDA_EXE:-$(command -v conda || true)}"
-if [[ -z "$CONDA_BIN" && -x "$HOME/miniconda3/bin/conda" ]]; then
-  CONDA_BIN="$HOME/miniconda3/bin/conda"
+if [[ -z "$CONDA_BIN" ]]; then
+  for base in miniconda3 miniforge3 mambaforge anaconda3; do
+    if [[ -x "$HOME/$base/bin/conda" ]]; then
+      CONDA_BIN="$HOME/$base/bin/conda"
+      break
+    fi
+  done
 fi
 [[ -n "$CONDA_BIN" ]] \
   || die "conda not found. Install Miniconda (https://docs.anaconda.com/miniconda/), open a new terminal, and re-run."
@@ -76,9 +89,11 @@ set -u
 export CUDA_HOME="$CONDA_PREFIX"
 # Conda's CUDA packages keep headers here rather than in $CUDA_HOME/include.
 export CPATH="$CONDA_PREFIX/targets/x86_64-linux/include${CPATH:+:$CPATH}"
-command -v nvcc >/dev/null || die "nvcc not found in the conda env. environment.yml should install cuda-toolkit 12.8."
-nvcc --version | grep 'release 12\.8' >/dev/null \
-  || die "Conda env has the wrong CUDA version: $(nvcc --version | tail -n1). Expected 12.8."
+# Check the nvcc the extension builds will use, not whichever one happens to be first on PATH.
+NVCC="$CUDA_HOME/bin/nvcc"
+[[ -x "$NVCC" ]] || die "nvcc not found at $NVCC. environment.yml should install cuda-toolkit 12.8 into the env."
+"$NVCC" --version | grep 'release 12\.8' >/dev/null \
+  || die "Conda env has the wrong CUDA version: $("$NVCC" --version | tail -n1). Expected 12.8."
 
 check_torch() {
   python - <<'EOF' || die "PyTorch is no longer the CUDA 12.8 build. Fix: pip install --force-reinstall -r env/requirements-gpu.txt"
@@ -95,7 +110,8 @@ pip install -r "$ROOT/env/requirements-gpu.txt"
 check_torch
 mkdir -p "$BUILD_DIR"
 # Every later install is constrained to this exact torch, so nothing can swap it for a PyPI build.
-pip freeze | grep -E '^(torch|torchvision)==' >"$TORCH_PINS"
+python -c "import torch, torchvision; print(f'torch=={torch.__version__}'); print(f'torchvision=={torchvision.__version__}')" \
+  >"$TORCH_PINS"
 
 echo "==> Fetching MASt3R submodule"
 git -C "$ROOT" submodule update --init --recursive

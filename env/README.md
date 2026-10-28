@@ -33,3 +33,4 @@ The GPU stages (`reconstruct`, `splat`) need an NVIDIA card from the RTX 20 seri
 | curope build fails | Safe to ignore. MASt3R falls back to a slower PyTorch path. |
 | gsplat build dies with `Killed` | Out of RAM during compilation. Re-run with fewer jobs: `MAX_JOBS=2 bash env/setup_wsl.sh`. |
 | `ImportError: libGL.so.1` | `sudo apt install -y libgl1 libglib2.0-0` |
+| `.splat` / `.ply` / video files are tiny text files starting with `version https://git-lfs` | git-lfs wasn't installed when you cloned. `sudo apt install -y git-lfs && git lfs install && git lfs pull` |
