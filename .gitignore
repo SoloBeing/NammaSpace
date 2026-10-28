@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+
+# Node
+viewer/node_modules/
+viewer/dist/
+
+# Model weights (download with env/download_weights.sh)
+checkpoints/*
+!checkpoints/.gitkeep
+
+# Third-party build artifacts
+third_party/_build/
+
+# Scene working data (bundle/ is kept)
+scenes/*/raw/
+scenes/*/frames/
+scenes/*/recon/
+scenes/*/logs/
+scenes/*/ingest.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Syncthing
+.stfolder/
+.stversions/
+.stignore

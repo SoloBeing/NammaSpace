@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "manifest.schema.json",
+  "title": "AtomSpace scene bundle manifest",
+  "description": "Entry point the viewer loads first. World space is metric, +Y up, floor at y = 0. The splat stays in recon space and the viewer applies world_from_recon to it; navmesh and POIs are already in world space.",
+  "type": "object",
+  "required": ["format_version", "scene", "created_at", "track", "keyframes", "world_from_recon", "scale", "files"],
+  "additionalProperties": false,
+  "properties": {
+    "format_version": { "const": 1 },
+    "scene": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time" },
+    "track": { "enum": ["fallback", "fast"] },
+    "keyframes": { "type": "integer", "minimum": 1 },
+    "world_from_recon": {
+      "description": "4x4 transform, column-major (THREE.Matrix4.fromArray order). Includes the metric scale and floor alignment. Identity while the scene is unscaled.",
+      "type": "array",
+      "items": { "type": "number" },
+      "minItems": 16,
+      "maxItems": 16
+    },
+    "scale": {
+      "type": "object",
+      "required": ["source", "factor"],
+      "additionalProperties": false,
+      "properties": {
+        "source": { "enum": ["user", "sensor", "unscaled"] },
+        "factor": { "type": "number", "exclusiveMinimum": 0 },
+        "reference": {
+          "description": "Present when source is 'user'. Points are in recon space.",
+          "type": "object",
+          "required": ["a", "b", "distance_m"],
+          "additionalProperties": false,
+          "properties": {
+            "a": { "$ref": "#/$defs/vec3" },
+            "b": { "$ref": "#/$defs/vec3" },
+            "distance_m": { "type": "number", "exclusiveMinimum": 0 }
+          }
+        }
+      }
+    },
+    "files": {
+      "description": "Paths relative to the bundle folder.",
+      "type": "object",
+      "required": ["splat", "navmesh", "pois"],
+      "additionalProperties": false,
+      "properties": {
+        "splat": { "type": "string" },
+        "navmesh": { "type": ["string", "null"], "description": "null until the scene has a metric scale." },
+        "pois": { "type": "string" }
+      }
+    }
+  },
+  "$defs": {
+    "vec3": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 }
+  }
+}

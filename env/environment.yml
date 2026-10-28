@@ -1,0 +1,12 @@
+name: atomspace
+channels:
+  - nvidia/label/cuda-12.8.0
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - cmake
+  - cython
+  - ffmpeg
+  - faiss-cpu
+  - cuda-toolkit=12.8

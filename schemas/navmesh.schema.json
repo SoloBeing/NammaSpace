@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "navmesh.schema.json",
+  "title": "AtomSpace navmesh",
+  "description": "Walkable floor polygons in world space (meters, +Y up), already shrunk by the agent radius so any point inside is a safe camera position.",
+  "type": "object",
+  "required": ["format_version", "units", "agent", "vertices", "polygons"],
+  "additionalProperties": false,
+  "properties": {
+    "format_version": { "const": 1 },
+    "units": { "const": "m" },
+    "agent": {
+      "type": "object",
+      "required": ["radius_m", "height_m", "max_climb_m"],
+      "additionalProperties": false,
+      "properties": {
+        "radius_m": { "type": "number", "exclusiveMinimum": 0 },
+        "height_m": { "type": "number", "exclusiveMinimum": 0 },
+        "max_climb_m": { "type": "number", "minimum": 0 }
+      }
+    },
+    "vertices": {
+      "type": "array",
+      "items": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 }
+    },
+    "polygons": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["v"],
+        "additionalProperties": false,
+        "properties": {
+          "v": {
+            "description": "Vertex indices, counter-clockwise seen from above.",
+            "type": "array",
+            "items": { "type": "integer", "minimum": 0 },
+            "minItems": 3
+          },
+          "n": {
+            "description": "Neighbour polygon index across edge i (v[i] -> v[i+1]), or -1 for a boundary edge. Used by A* in v2.",
+            "type": "array",
+            "items": { "type": "integer", "minimum": -1 }
+          }
+        }
+      }
+    }
+  }
+}

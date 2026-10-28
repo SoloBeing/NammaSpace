@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "atomspace"
+version = "0.1.0"
+description = "Smartphone video to navigable 3D indoor digital twin"
+requires-python = ">=3.10"
+# torch/torchvision come from env/requirements-gpu.txt (cu128 index), not PyPI.
+dependencies = [
+    "numpy",
+    "scipy",
+    "pillow",
+    "opencv-python-headless",
+    "open3d",
+    "jsonschema",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+atomspace = "atomspace.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["atomspace*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

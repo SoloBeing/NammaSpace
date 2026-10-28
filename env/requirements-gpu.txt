@@ -1,0 +1,4 @@
+# cu128 wheels cover Turing (sm_75) through Blackwell (sm_120).
+--index-url https://download.pytorch.org/whl/cu128
+torch>=2.7
+torchvision>=0.22

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "pois.schema.json",
+  "title": "AtomSpace points of interest",
+  "description": "Named 3D locations in world space (meters, +Y up). Written by the POI editor.",
+  "type": "object",
+  "required": ["format_version", "pois"],
+  "additionalProperties": false,
+  "properties": {
+    "format_version": { "const": 1 },
+    "pois": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "position", "source"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+          "name": { "type": "string", "minLength": 1 },
+          "aliases": { "type": "array", "items": { "type": "string" } },
+          "category": { "type": "string" },
+          "position": { "$ref": "#/$defs/vec3", "description": "The pin location (the thing itself)." },
+          "view": {
+            "description": "Where the camera lands when flying to this POI. position should be on the navmesh.",
+            "type": "object",
+            "required": ["position", "target"],
+            "additionalProperties": false,
+            "properties": {
+              "position": { "$ref": "#/$defs/vec3" },
+              "target": { "$ref": "#/$defs/vec3" }
+            }
+          },
+          "source": { "enum": ["manual", "auto"] }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "vec3": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 }
+  }
+}
