@@ -37,7 +37,9 @@ PROFILES: dict[str, Profile] = {
 @dataclass(frozen=True)
 class IngestConfig:
     extract_fps: float = 6.0
-    min_sharpness: float = 100.0
+    max_frame_side: int = 1920
+    min_relative_sharpness: float = 0.6
+    sharpness_window: int = 15
     min_motion: float = 0.15
 
 

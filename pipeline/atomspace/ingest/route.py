@@ -9,5 +9,7 @@ class Track(str, Enum):
 
 
 def choose_track(meta: VideoMeta) -> Track:
-    """Fast track needs sensor poses; everything else takes the pure-vision fallback (the default)."""
-    return Track.FAST if meta.has_ar_poses else Track.FALLBACK
+    """Always the pure-vision default for now. The sensor fast track is built after the
+    default track works end to end; it will switch on meta.has_ar_poses.
+    """
+    return Track.FALLBACK

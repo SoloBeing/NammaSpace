@@ -10,20 +10,40 @@ from .probe import probe_video
 from .route import choose_track
 from .slice import extract_frames
 
+MIN_KEYFRAMES = 3
+
 
 def run(video: Path, paths: ScenePaths, max_keyframes: int, cfg: IngestConfig = IngestConfig()) -> None:
+    if not video.is_file():
+        raise FileNotFoundError(f"Video not found: {video}")
     paths.ensure()
     stored = paths.raw / f"input{video.suffix.lower()}"
     if video.resolve() != stored.resolve():
         shutil.copy2(video, stored)
 
-    meta = probe_video(stored)
+    meta = probe_video(video)
+    print(
+        f"Video: {meta.width}x{meta.height} @ {meta.fps:.2f} fps, {meta.duration_s:.1f} s, {meta.codec}"
+        + (f", {meta.device_make} {meta.device_model}" if meta.device_model else "")
+    )
+    if meta.hdr:
+        print(
+            "WARNING: this is an HDR video; extracted frames may look washed out. "
+            "For best results record in SDR (turn off HDR Video in the phone's camera settings)."
+        )
     track = choose_track(meta)
 
+    for old in paths.frames.glob("*.jpg"):
+        old.unlink()
     candidates_dir = paths.frames / "candidates"
-    candidates = extract_frames(stored, candidates_dir, cfg.extract_fps)
-    sharp = filter_sharp(candidates, cfg.min_sharpness)
+    candidates = extract_frames(stored, candidates_dir, min(cfg.extract_fps, meta.fps), cfg.max_frame_side)
+    sharp = filter_sharp(candidates, cfg.min_relative_sharpness, cfg.sharpness_window)
     keyframes = select_keyframes(sharp, cfg.min_motion, max_keyframes)
+    if len(keyframes) < MIN_KEYFRAMES:
+        shutil.rmtree(candidates_dir)
+        raise RuntimeError(
+            f"Only {len(keyframes)} distinct views found. Record a longer, slower walk that covers the space."
+        )
     for frame in keyframes:
         shutil.copy2(frame, paths.frames / frame.name)
     shutil.rmtree(candidates_dir)
@@ -34,6 +54,7 @@ def run(video: Path, paths: ScenePaths, max_keyframes: int, cfg: IngestConfig = 
                 "video": stored.name,
                 "meta": asdict(meta),
                 "track": track.value,
+                "extract_fps": min(cfg.extract_fps, meta.fps),
                 "candidates": len(candidates),
                 "sharp": len(sharp),
                 "keyframes": [f.name for f in keyframes],
