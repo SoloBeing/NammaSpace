@@ -23,6 +23,8 @@ The GPU stages (`reconstruct`, `splat`) need an NVIDIA card from the RTX 20 seri
 
 `setup_wsl.sh` reads the card's compute capability and builds gsplat for it (`7.5` Turing, `8.6` Ampere, `8.9` Ada, `12.0` Blackwell). gsplat and ASMK are pinned to fixed versions, and the script checks after each install step that PyTorch is still the CUDA 12.8 build.
 
+`download_weights.sh` can be interrupted and re-run safely. It resumes partial downloads, checks every file's size against a pinned value, and only moves a file into `checkpoints/` once it passes. On the first run it records each file's sha256 in `env/weights.sha256`. **After `smoke_test.py` passes, commit that file** (`git add env/weights.sha256 && git commit -m "Record MASt3R weight checksums"`), so every later download on any machine is checked against the same hashes. If Naver replaces a file upstream, the script stops instead of quietly downloading a different model.
+
 ## Common failures
 
 | Symptom | Fix |
