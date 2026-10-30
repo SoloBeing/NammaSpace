@@ -2,8 +2,10 @@ import json
 from datetime import datetime, timezone
 
 import jsonschema
+import numpy as np
 
 from .config import SCHEMAS_DIR, ScenePaths
+from .navmesh.floor import FloorPlane, camera_poses, world_from_floor
 from .reconstruct.scale import load_reference, metric_factor
 
 IDENTITY = [1.0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 1.0]
@@ -12,6 +14,16 @@ IDENTITY = [1.0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 1.0]
 def _validate(name: str, data: dict) -> None:
     schema = json.loads((SCHEMAS_DIR / f"{name}.schema.json").read_text())
     jsonschema.validate(data, schema)
+
+
+def _upright_from_cameras(paths: ScenePaths) -> list[float]:
+    """Before a scale is set there is no floor yet, and MASt3R's y axis points down. This stands
+    the scene upright around the first camera so the viewer's scale tool has a usable view."""
+    poses = camera_poses(paths.transforms)
+    up = poses[:, :3, 1].mean(axis=0)
+    world = world_from_floor(FloorPlane(up / np.linalg.norm(up), 0.0))
+    world[:3, 3] = -world[:3, :3] @ poses[0, :3, 3]
+    return world.T.flatten().tolist()
 
 
 def run(paths: ScenePaths) -> None:
@@ -27,9 +39,12 @@ def run(paths: ScenePaths) -> None:
             ref = load_reference(paths.scale)
             scale["reference"] = {"a": list(ref.a), "b": list(ref.b), "distance_m": ref.distance_m}
 
-    world_from_recon = (
-        json.loads(paths.world.read_text())["world_from_recon"] if paths.world.exists() else IDENTITY
-    )
+    if paths.world.exists():
+        world_from_recon = json.loads(paths.world.read_text())["world_from_recon"]
+    elif paths.transforms.exists():
+        world_from_recon = _upright_from_cameras(paths)
+    else:
+        world_from_recon = IDENTITY
 
     if not paths.pois.exists():
         paths.pois.write_text(json.dumps({"format_version": 1, "pois": []}, indent=2))

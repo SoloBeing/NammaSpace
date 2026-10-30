@@ -56,7 +56,7 @@ Replace static floor plans with a link that opens a walkable, photorealistic 3D 
 
 ## Metric scale
 
-MASt3R output is only near-metric, so scale comes from the user: click two points with a known real distance (a door is about 2 m) in the viewer's scale tool, or pass them to `atomspace scale`. Until then the scene is `unscaled`, has no navmesh, and can still be viewed. On the fast track, sensor poses are already metric (`source: "sensor"`).
+MASt3R output is only near-metric, so scale comes from the user: click two points with a known real distance (a door is about 2 m) in the viewer's scale tool, or pass them to `atomspace scale`. Until then the scene is `unscaled`, has no navmesh, and can still be viewed (`bundle` stands it upright around the first camera, so the scale tool has a usable view). On the fast track, sensor poses are already metric (`source: "sensor"`).
 
 ## Collision
 

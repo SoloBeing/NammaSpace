@@ -1,12 +1,75 @@
-import type * as THREE from 'three';
+import * as THREE from 'three';
 import type { Poi } from '../scene/loader';
+
+const LABEL_HEIGHT = 0.05; // fraction of the view: readable from across a room and not huge up close
+const FONT_PX = 40;
+const PADDING_PX = 16;
+const LIFT_M = 0.2; // the label floats above the point it marks
 
 export interface Pins {
   update(pois: Poi[]): void;
   dispose(): void;
 }
 
+function labelSprite(text: string): THREE.Sprite {
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d')!;
+  const font = `600 ${FONT_PX}px system-ui, sans-serif`;
+  context.font = font;
+  canvas.width = Math.ceil(context.measureText(text).width) + 2 * PADDING_PX;
+  canvas.height = FONT_PX + 2 * PADDING_PX;
+  context.font = font; // resizing a canvas resets its state
+  context.fillStyle = 'rgba(17, 17, 17, 0.8)';
+  context.beginPath();
+  context.roundRect(0, 0, canvas.width, canvas.height, PADDING_PX);
+  context.fill();
+  context.fillStyle = '#fff';
+  context.textBaseline = 'middle';
+  context.fillText(text, PADDING_PX, canvas.height / 2);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  const material = new THREE.SpriteMaterial({
+    map: texture,
+    depthTest: false,
+    depthWrite: false,
+    sizeAttenuation: false,
+  });
+  const sprite = new THREE.Sprite(material);
+  sprite.scale.set((LABEL_HEIGHT * canvas.width) / canvas.height, LABEL_HEIGHT, 1);
+  sprite.renderOrder = 10; // after the splats, which are drawn as transparent
+  return sprite;
+}
+
 /** Billboard pins with name labels at each POI position. */
 export function createPins(scene: THREE.Scene, pois: Poi[]): Pins {
-  throw new Error('createPins not implemented');
+  const group = new THREE.Group();
+  scene.add(group);
+
+  const clear = () => {
+    for (const sprite of group.children as THREE.Sprite[]) {
+      sprite.material.map?.dispose();
+      sprite.material.dispose();
+    }
+    group.clear();
+  };
+
+  const update = (next: Poi[]) => {
+    clear();
+    for (const poi of next) {
+      const sprite = labelSprite(poi.name);
+      sprite.position.fromArray(poi.position);
+      sprite.position.y += LIFT_M;
+      group.add(sprite);
+    }
+  };
+
+  update(pois);
+  return {
+    update,
+    dispose: () => {
+      clear();
+      scene.remove(group);
+    },
+  };
 }

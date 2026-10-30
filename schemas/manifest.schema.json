@@ -13,7 +13,7 @@
     "track": { "enum": ["fallback", "fast"] },
     "keyframes": { "type": "integer", "minimum": 1 },
     "world_from_recon": {
-      "description": "4x4 transform, column-major (THREE.Matrix4.fromArray order). Includes the metric scale and floor alignment. Identity while the scene is unscaled.",
+      "description": "4x4 transform, column-major (THREE.Matrix4.fromArray order). Includes the metric scale and floor alignment. While the scene is unscaled it only stands the scene upright around the first camera (no scale, no floor).",
       "type": "array",
       "items": { "type": "number" },
       "minItems": 16,

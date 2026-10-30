@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import './ui/styles.css';
 import { mountPoiEditor } from './admin/poiEditor';
 import { mountScaleTool } from './admin/scaleTool';
@@ -12,18 +13,43 @@ import { mountSearchBar } from './ui/searchBar';
 
 async function start(app: HTMLElement, sceneName: string, admin: boolean) {
   const bundle = await loadScene(sceneName);
-  const viewer = await createSplatViewer(app, bundle);
+  const loading = document.createElement('p');
+  loading.className = 'loading';
+  loading.textContent = 'Loading scene…';
+  app.append(loading);
   const guard = bundle.navmesh ? new NavmeshGuard(bundle.navmesh) : null;
+  // Without a navmesh the first camera is at the origin, already at its own height.
+  const startPosition = guard ? guard.spawnPosition() : new THREE.Vector3();
+  const viewer = await createSplatViewer(app, bundle, startPosition, (percent) => {
+    loading.textContent = `Loading scene… ${Math.round(percent)}%`;
+  });
+  loading.remove();
+
   const controls = new FirstPersonControls(viewer.camera, viewer.domElement);
-  createPins(viewer.scene, bundle.pois);
-  mountSearchBar(app, createPoiSearch(bundle.pois), (poi) => flyTo(viewer.camera, poi));
+  const pins = createPins(viewer.scene, bundle.pois);
+  let search = createPoiSearch(bundle.pois);
+  let flying = false;
+  mountSearchBar(
+    app,
+    (query, limit) => search(query, limit),
+    (poi) => {
+      flying = true;
+      void flyTo(viewer.camera, poi, guard).then(() => {
+        flying = false;
+      });
+    },
+  );
 
   if (admin) {
     mountScaleTool(viewer, bundle);
-    mountPoiEditor(viewer, bundle);
+    mountPoiEditor(viewer, bundle, (pois) => {
+      pins.update(pois);
+      search = createPoiSearch(pois);
+    });
   }
 
   viewer.onFrame((dt) => {
+    if (flying) return;
     const position = viewer.camera.position;
     const delta = controls.desiredMove(dt);
     position.copy(guard ? guard.tryMove(position, delta) : position.clone().add(delta));

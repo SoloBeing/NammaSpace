@@ -123,6 +123,28 @@ def test_navmesh_topology():
     assert any(-1 in p["n"] for p in polygons)
 
 
+def test_unscaled_bundle_stands_upright_around_the_first_camera(tmp_path):
+    paths = ScenePaths(tmp_path / "scene")
+    paths.ensure()
+    q, _ = np.linalg.qr(np.random.default_rng(1).normal(size=(3, 3)))
+    if np.linalg.det(q) < 0:
+        q[:, 0] *= -1
+    camera = np.eye(4)
+    camera[:3, :3] = q
+    camera[:3, 3] = [1.0, 2.0, 3.0]
+    paths.transforms.write_text(json.dumps({"frames": [{"transform_matrix": camera.tolist()}]}))
+    paths.ingest_meta.write_text(json.dumps({"track": "fallback", "keyframes": ["00001.jpg"]}))
+
+    bundle.run(paths)
+
+    manifest = json.loads(paths.manifest.read_text())
+    assert manifest["scale"]["source"] == "unscaled"
+    world_from_recon = np.array(manifest["world_from_recon"]).reshape(4, 4).T
+    np.testing.assert_allclose(world_from_recon @ camera[:, 3], [0, 0, 0, 1], atol=1e-9)
+    np.testing.assert_allclose(world_from_recon[:3, :3] @ q[:, 1], [0, 1, 0], atol=1e-9)
+    np.testing.assert_allclose(np.linalg.det(world_from_recon[:3, :3]), 1.0)
+
+
 def test_run_end_to_end_from_recon_space(tmp_path):
     """A half-size, tilted reconstruction comes out as a metric, floor-aligned, valid bundle."""
     paths = ScenePaths(tmp_path / "scene")

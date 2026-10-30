@@ -49,12 +49,13 @@ AtomSpace/
 │
 ├── viewer/                       # Three.js web client (runs on any machine)
 │   ├── package.json              # three, @mkkellogg/gaussian-splats-3d, fuse.js, vite
-│   ├── vite.config.ts            # dev server also serves scenes/<name>/bundle/*
+│   ├── vite.config.ts            # dev server also serves scenes/<name>/bundle/* and saves POIs
 │   ├── tsconfig.json
 │   ├── index.html
 │   └── src/
 │       ├── main.ts               # ?scene=<name> loads a bundle; &admin enables admin tools
 │       ├── vite-env.d.ts         # VITE_SCENES_BASE_URL (CDN base in production)
+│       ├── gaussian-splats-3d.d.ts  # types for the parts of the splat library we use
 │       ├── scene/
 │       │   ├── loader.ts         # fetches manifest, navmesh, pois; bundle types
 │       │   └── splatRenderer.ts  # splat viewer placed by world_from_recon
@@ -66,18 +67,19 @@ AtomSpace/
 │       │   ├── flyTo.ts          # camera flight to a POI
 │       │   └── pins.ts           # 3D pins with labels
 │       ├── admin/
+│       │   ├── panel.ts          # shared admin side panel
 │       │   ├── scaleTool.ts      # two points + distance → `atomspace scale` command
-│       │   └── poiEditor.ts      # place, name and save POIs
+│       │   └── poiEditor.ts      # place, name and save POIs (needs `npm run dev`)
 │       └── ui/
 │           ├── searchBar.ts
 │           └── styles.css
 │
 ├── scenes/<name>/                # one folder per captured space
-│   ├── ingest.json               # video metadata, track, keyframe list      (gitignored)
+│   ├── ingest.json               # video metadata, track, keyframe list
 │   ├── raw/                      # input video                               (gitignored)
 │   ├── frames/                   # keyframes                                 (gitignored)
-│   ├── recon/                    # transforms.json, dense_points.ply, splat.ply,
-│   │                             # scale.json, world.json                    (gitignored)
+│   ├── recon/                    # transforms.json, dense_points.ply (LFS), scale.json,
+│   │                             # world.json; everything else here is gitignored
 │   ├── logs/                     # per-stage duration + peak VRAM            (gitignored)
 │   └── bundle/                   # what the viewer loads
 │       ├── manifest.json

@@ -18,3 +18,116 @@ body {
   width: 100%;
   height: 100%;
 }
+
+.loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+}
+
+.search {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: min(320px, calc(100vw - 32px));
+}
+
+.search input,
+.admin input,
+.admin button {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid #444;
+  border-radius: 8px;
+  background: rgba(17, 17, 17, 0.85);
+  color: inherit;
+  font: inherit;
+}
+
+.admin button {
+  cursor: pointer;
+}
+
+.search input:focus-visible,
+.admin input:focus-visible,
+.admin button:focus-visible {
+  outline: 2px solid #7ab8ff;
+  outline-offset: 1px;
+}
+
+.search ul {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(17, 17, 17, 0.9);
+}
+
+.search li {
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.search li.active,
+.search li:hover {
+  background: #2d4a66;
+}
+
+.admin {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(300px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+}
+
+.admin section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(17, 17, 17, 0.85);
+}
+
+.admin h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.admin p {
+  margin: 0;
+}
+
+.admin ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.admin li button {
+  width: auto;
+}
+
+.admin .command {
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+  user-select: all;
+}

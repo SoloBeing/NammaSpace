@@ -1,4 +1,6 @@
+import json
 from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
 
@@ -16,6 +18,11 @@ class FloorPlane:
 
     normal: np.ndarray
     offset: float
+
+
+def camera_poses(transforms: Path) -> np.ndarray:
+    """(N, 4, 4) camera-to-world matrices from transforms.json, OpenGL axes (column 1 is camera up)."""
+    return np.array([f["transform_matrix"] for f in json.loads(transforms.read_text())["frames"]])
 
 
 def fit_floor(points: np.ndarray, up_hint: np.ndarray, seed: int = 0) -> FloorPlane:
