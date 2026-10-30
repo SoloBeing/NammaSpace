@@ -44,7 +44,7 @@ AtomSpace/
 │   │   └── navmesh/
 │   │       ├── floor.py          # RANSAC floor + align to +Y up
 │   │       ├── obstacles.py      # occupancy grid between ankle and head height
-│   │       └── polygonize.py     # 0.4 m erosion → outlines → triangles → navmesh dict
+│   │       └── polygonize.py     # 0.25 m erosion → outlines → triangles → navmesh dict
 │   └── tests/                    # blur, dedupe, ingest, reconstruct, floor, navmesh
 │
 ├── viewer/                       # Three.js web client (runs on any machine)

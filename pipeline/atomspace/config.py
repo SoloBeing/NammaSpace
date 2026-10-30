@@ -45,7 +45,7 @@ class IngestConfig:
 
 @dataclass(frozen=True)
 class NavmeshConfig:
-    agent_radius_m: float = 0.4
+    agent_radius_m: float = 0.25
     agent_height_m: float = 1.7
     ankle_height_m: float = 0.15
     max_climb_m: float = 0.2

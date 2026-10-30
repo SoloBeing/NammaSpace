@@ -9,7 +9,7 @@ from atomspace.navmesh.polygonize import build_navmesh, safe_cells, walkable_mes
 from atomspace.reconstruct.export import write_ply
 from atomspace.reconstruct.scale import ScaleReference, save_reference
 
-CFG = NavmeshConfig()
+CFG = NavmeshConfig(agent_radius_m=0.4)  # the room sizes below are written around this margin
 STEP = 0.02
 
 
@@ -187,7 +187,7 @@ def test_run_end_to_end_from_recon_space(tmp_path):
     paths.ingest_meta.write_text(json.dumps({"track": "fallback", "keyframes": ["00001.jpg"]}))
     save_reference(ScaleReference((0, 0, 0), (1, 0, 0), 2.0), paths.scale)
 
-    navmesh.run(paths)
+    navmesh.run(paths, CFG)
     bundle.run(paths)
 
     manifest = json.loads(paths.manifest.read_text())

@@ -36,7 +36,7 @@ Replace static floor plans with a link that opens a walkable, photorealistic 3D 
         │                         [5] NAVMESH
         │                             floor RANSAC (camera up picks the floor) → align
         │                             +Y up → occupancy grid (ankle → head height) →
-        │                             eroded by 0.4 m agent radius → outlines → triangles
+        │                             eroded by 0.25 m agent radius → outlines → triangles
         │                               │ bundle/navmesh.json + recon/world.json
         └───────────────┬───────────────┘
                         ▼
