@@ -56,7 +56,7 @@ def test_faint_and_broken_gaussians_are_dropped(tmp_path):
 
 
 def test_needles_are_dropped_but_flat_discs_stay(tmp_path):
-    scales = np.log(np.array([[0.1, 0.1, 0.002], [0.1, 0.005, 0.005]], np.float32))  # disc, needle
+    scales = np.log(np.array([[0.1, 0.1, 0.002], [0.1, 0.001, 0.001]], np.float32))  # disc, needle
     splats = _convert(tmp_path, _gaussians(scales=scales))
     np.testing.assert_array_equal(splats["position"], [[1, 2, 3]])
 

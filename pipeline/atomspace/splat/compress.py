@@ -4,9 +4,10 @@ import numpy as np
 
 SH_C0 = 0.28209479177387814  # zeroth spherical harmonic, turns f_dc into RGB
 MIN_ALPHA = 5 / 255  # the viewer drops anything fainter when loading
-# Largest axis / middle axis. Surfaces are flat discs, near 1; far above that is a needle that only
-# looked right from the training views and shows as a streak from anywhere else.
-MAX_NEEDLE_RATIO = 6.0
+# Largest axis / middle axis. Far above 1 is a needle that only looked right from the training views
+# and shows as a streak from anywhere else. Plain walls do use long thin Gaussians: a limit of 6
+# dropped 23% of a real scene and left walls blotchy, while 30 drops 5% and keeps them smooth.
+MAX_NEEDLE_RATIO = 30.0
 
 SPLAT_DTYPE = np.dtype([("position", "<f4", 3), ("scale", "<f4", 3), ("rgba", "u1", 4), ("rotation", "u1", 4)])
 
