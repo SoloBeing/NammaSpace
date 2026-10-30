@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 import cv2
 import numpy as np
+from scipy.ndimage import binary_fill_holes
 
 from ..config import NavmeshConfig
 
@@ -16,10 +17,14 @@ class OccupancyGrid:
     blocked: np.ndarray  # (H, W) bool: something between ankle and head height
 
 
-def occupancy_grid(points_world: np.ndarray, cfg: NavmeshConfig) -> OccupancyGrid:
+def occupancy_grid(points_world: np.ndarray, cfg: NavmeshConfig, walked_xz: np.ndarray | None = None) -> OccupancyGrid:
     """Projects world points (y up, floor at 0) onto the XZ plane. Points between
     `ankle_height_m` and `agent_height_m` mark cells blocked; floor points mark cells observed.
-    Unobserved cells stay unwalkable so holes in the capture don't become paths.
+    Unobserved cells stay unwalkable so holes in the capture don't become paths, except a patch
+    entirely enclosed by observed floor: anything standing there would show up as blocked.
+
+    `walked_xz` (N, 2) are camera positions. Whoever filmed stood there, so those cells are floor
+    and free even though a phone held ahead of the body rarely sees the ground under its owner.
     """
     y = points_world[:, 1]
     floor = points_world[np.abs(y) < cfg.ankle_height_m][:, [0, 2]]
@@ -42,6 +47,15 @@ def occupancy_grid(points_world: np.ndarray, cfg: NavmeshConfig) -> OccupancyGri
     radius = int(np.ceil(cfg.floor_gap_fill_m / (2 * cell)))
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * radius + 1, 2 * radius + 1))
     observed = cv2.morphologyEx(observed.astype(np.uint8), cv2.MORPH_CLOSE, kernel).astype(bool)
+
+    if walked_xz is not None and len(walked_xz) > 0:
+        walked = np.zeros((height, width), np.uint8)
+        pixels = np.floor((walked_xz - low) / cell).astype(int)
+        for col, row in pixels:
+            cv2.circle(walked, (int(col), int(row)), int(round(cfg.walked_radius_m / cell)), 1, -1)
+        observed |= walked.astype(bool)
+        blocked &= ~walked.astype(bool)
+    observed = binary_fill_holes(observed)
     return OccupancyGrid((float(low[0]), float(low[1])), cell, observed, blocked)
 
 

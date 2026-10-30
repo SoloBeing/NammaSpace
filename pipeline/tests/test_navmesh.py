@@ -78,6 +78,29 @@ def test_unobserved_floor_is_not_walkable():
     assert vertices[:, 0].max() < 2.5
 
 
+def test_floor_under_the_walked_path_counts_even_if_never_seen():
+    # A phone held ahead of the body leaves a hole in the floor exactly where its owner walked.
+    x, z = np.meshgrid(np.arange(0, 5, STEP), np.arange(0, 4, STEP))
+    keep = ~((np.abs(x - 2.5) < 1.2) & (np.abs(z - 2) < 1.0))
+    floor = np.c_[x[keep], np.zeros(keep.sum()), z[keep]]
+    walls = [_box(-0.1, 5.1, -0.1, 0), _box(-0.1, 5.1, 4, 4.1), _box(-0.1, 0, 0, 4), _box(5, 5.1, 0, 4)]
+    vertices, triangles = _mesh(np.vstack([floor, *walls]))
+    assert _inside(vertices, triangles, 2.5, 2.0)
+
+
+def test_walked_cells_are_free_of_noise_and_connect_to_the_floor():
+    # A strip the camera crossed joins two seen floors, past a smear of noise that reads as obstacle.
+    floor = np.vstack([_floor(0, 2, 0, 4), _floor(3, 5, 0, 4)])
+    smear = _box(2.0, 3.0, 1.8, 2.2, top=0.5)
+    walls = [_box(-0.1, 5.1, -0.1, 0), _box(-0.1, 5.1, 4, 4.1), _box(-0.1, 0, 0, 4), _box(5, 5.1, 0, 4)]
+    points = np.vstack([floor, smear, *walls])
+
+    path = np.c_[np.linspace(1.5, 3.5, 30), np.full(30, 2.0)]
+    grid = occupancy_grid(points, NavmeshConfig(walked_radius_m=0.6), walked_xz=path)
+    vertices, triangles = walkable_mesh(safe_cells(grid, CFG.agent_radius_m), grid)
+    assert _inside(vertices, triangles, 1.0, 2.0) and _inside(vertices, triangles, 4.0, 2.0)
+
+
 def test_stray_points_do_not_block_the_floor():
     stray = np.array([[2.5, 1.0, 2.0], [2.5, 1.1, 2.0]])
     vertices, triangles = _mesh(_walled_room(stray))

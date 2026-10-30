@@ -19,12 +19,14 @@ def run(paths: ScenePaths, cfg: NavmeshConfig = NavmeshConfig()) -> None:
 
     points, _ = read_ply(paths.dense_points)
     points = points.astype(np.float64) * factor
-    plane = fit_floor(points, camera_poses(paths.transforms)[:, :3, 1].mean(axis=0))
+    poses = camera_poses(paths.transforms)
+    plane = fit_floor(points, poses[:, :3, 1].mean(axis=0))
     world_from_scaled = world_from_floor(plane)
     world_from_recon = world_from_scaled @ np.diag([factor, factor, factor, 1.0])
     points_world = points @ world_from_scaled[:3, :3].T + world_from_scaled[:3, 3]
+    cameras_world = (poses[:, :3, 3] * factor) @ world_from_scaled[:3, :3].T + world_from_scaled[:3, 3]
 
-    grid = occupancy_grid(points_world, cfg)
+    grid = occupancy_grid(points_world, cfg, walked_xz=cameras_world[:, [0, 2]])
     safe = safe_cells(grid, cfg.agent_radius_m)
     vertices, triangles = walkable_mesh(safe, grid)
     navmesh = build_navmesh(vertices, triangles, cfg)
