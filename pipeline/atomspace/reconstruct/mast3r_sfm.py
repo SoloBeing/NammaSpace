@@ -1,3 +1,4 @@
+import argparse
 import shutil
 import sys
 from pathlib import Path
@@ -50,6 +51,9 @@ def reconstruct(frames: list[Path], profile: Profile, cache_dir: Path) -> Recons
     image_paths = [str(f) for f in frames]
     model = AsymmetricMASt3R.from_pretrained(str(MODEL_CKPT)).to("cuda").eval()
 
+    # The retrieval checkpoint stores its arguments as a Namespace, which Retriever's torch.load
+    # refuses by default since PyTorch 2.6.
+    torch.serialization.add_safe_globals([argparse.Namespace])
     retriever = Retriever(str(RETRIEVAL_CKPT), backbone=model, device="cuda")
     with torch.no_grad():
         similarity = retriever(image_paths)
