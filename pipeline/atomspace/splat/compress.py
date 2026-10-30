@@ -4,6 +4,9 @@ import numpy as np
 
 SH_C0 = 0.28209479177387814  # zeroth spherical harmonic, turns f_dc into RGB
 MIN_ALPHA = 5 / 255  # the viewer drops anything fainter when loading
+# Largest axis / middle axis. Surfaces are flat discs, near 1; far above that is a needle that only
+# looked right from the training views and shows as a streak from anywhere else.
+MAX_NEEDLE_RATIO = 6.0
 
 SPLAT_DTYPE = np.dtype([("position", "<f4", 3), ("scale", "<f4", 3), ("rgba", "u1", 4), ("rotation", "u1", 4)])
 
@@ -21,7 +24,8 @@ def _read_gaussians(ply: Path) -> np.ndarray:
 
 def ply_to_splat(ply: Path, out_splat: Path) -> None:
     """Converts a 3DGS .ply to the compact .splat web format (32 bytes per Gaussian:
-    position f32x3, scale f32x3, RGBA u8x4, rotation u8x4), dropping near-transparent Gaussians.
+    position f32x3, scale f32x3, RGBA u8x4, rotation u8x4), dropping near-transparent and
+    needle-shaped Gaussians.
     """
     g = _read_gaussians(ply)
     column = lambda *names: np.stack([g[name] for name in names], axis=1).astype(np.float64)
@@ -34,7 +38,9 @@ def ply_to_splat(ply: Path, out_splat: Path) -> None:
 
     lengths = np.linalg.norm(rotations, axis=1, keepdims=True)
     finite = np.isfinite(np.c_[positions, rotations, scales, colors]).all(axis=1) & (lengths[:, 0] > 0)
-    keep = finite & (alpha >= MIN_ALPHA)
+    ordered = np.sort(np.where(np.isfinite(scales), scales, 0), axis=1)
+    needle = ordered[:, 2] > MAX_NEEDLE_RATIO * ordered[:, 1]
+    keep = finite & (alpha >= MIN_ALPHA) & ~needle
     if not keep.any():
         raise ValueError(f"{ply.name} has no visible Gaussians.")
 

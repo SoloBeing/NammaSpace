@@ -55,6 +55,12 @@ def test_faint_and_broken_gaussians_are_dropped(tmp_path):
         _convert(tmp_path, _gaussians(opacities=np.array([-10, -10], np.float32)))
 
 
+def test_needles_are_dropped_but_flat_discs_stay(tmp_path):
+    scales = np.log(np.array([[0.1, 0.1, 0.002], [0.1, 0.005, 0.005]], np.float32))  # disc, needle
+    splats = _convert(tmp_path, _gaussians(scales=scales))
+    np.testing.assert_array_equal(splats["position"], [[1, 2, 3]])
+
+
 def test_cameras_round_trip_from_export_at_half_size(tmp_path):
     paths = ScenePaths(tmp_path / "scene")
     paths.ensure()
