@@ -4,7 +4,7 @@ import numpy as np
 from PIL import Image
 
 from atomspace.config import ScenePaths
-from atomspace.reconstruct.export import Reconstruction, write_reconstruction
+from atomspace.reconstruct.export import Reconstruction, read_ply, write_reconstruction
 from atomspace.reconstruct.mast3r_sfm import pair_graph, to_original_pixels, voxel_downsample
 
 
@@ -69,6 +69,7 @@ def test_write_reconstruction(tmp_path):
     paths.ensure()
     Image.new("RGB", (640, 360)).save(paths.frames / "00001.jpg")
     paths.scale.write_text("{}")
+    paths.navmesh.write_text("{}")
 
     c2w = np.eye(4)
     c2w[:3, 3] = [1, 2, 3]
@@ -93,4 +94,9 @@ def test_write_reconstruction(tmp_path):
     np.testing.assert_array_equal(v["p"], points)
     np.testing.assert_array_equal(v["c"], colors)
 
+    read_points, read_colors = read_ply(paths.dense_points)
+    np.testing.assert_array_equal(read_points, points)
+    np.testing.assert_array_equal(read_colors, colors)
+
     assert not paths.scale.exists()
+    assert not paths.navmesh.exists()

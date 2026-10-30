@@ -19,9 +19,13 @@ third_party/_build/
 # Scene working data (bundle/ is kept)
 scenes/*/raw/
 scenes/*/frames/
-scenes/*/recon/
+scenes/*/recon/*
 scenes/*/logs/
-scenes/*/ingest.json
+# Tracked so either machine can run scale, navmesh and bundle without the GPU stages
+!scenes/*/recon/dense_points.ply
+!scenes/*/recon/transforms.json
+!scenes/*/recon/scale.json
+!scenes/*/recon/world.json
 
 # OS / editor
 .DS_Store

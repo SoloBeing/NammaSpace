@@ -34,9 +34,9 @@ Replace static floor plans with a link that opens a walkable, photorealistic 3D 
     dense points                        │
         │ bundle/scene.splat            ▼
         │                         [5] NAVMESH
-        │                             floor RANSAC → align +Y up → occupancy grid
-        │                             (ankle → head height) → walkable mesh → Recast,
-        │                             eroded by 0.4 m agent radius
+        │                             floor RANSAC (camera up picks the floor) → align
+        │                             +Y up → occupancy grid (ankle → head height) →
+        │                             eroded by 0.4 m agent radius → outlines → triangles
         │                               │ bundle/navmesh.json + recon/world.json
         └───────────────┬───────────────┘
                         ▼

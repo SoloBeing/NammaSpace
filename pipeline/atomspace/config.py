@@ -50,6 +50,8 @@ class NavmeshConfig:
     ankle_height_m: float = 0.15
     max_climb_m: float = 0.2
     cell_size_m: float = 0.05
+    min_blocked_points: int = 3  # fewer than this in a cell is floating noise, not an obstacle
+    floor_gap_fill_m: float = 0.15
 
 
 @dataclass(frozen=True)

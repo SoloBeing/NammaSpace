@@ -14,7 +14,7 @@ dependencies = [
     "pillow",
     # Same package dust3r requires; installing the -headless variant too would clobber cv2.
     "opencv-python",
-    "open3d",
+    "mapbox-earcut",
     "jsonschema",
 ]
 

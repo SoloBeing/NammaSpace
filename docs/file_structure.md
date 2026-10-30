@@ -44,9 +44,8 @@ AtomSpace/
 │   │   └── navmesh/
 │   │       ├── floor.py          # RANSAC floor + align to +Y up
 │   │       ├── obstacles.py      # occupancy grid between ankle and head height
-│   │       ├── polygonize.py     # grid → walkable triangle mesh
-│   │       └── recast.py         # Recast build, 0.4 m agent radius → navmesh dict
-│   └── tests/                    # blur, dedupe, floor (xfail until implemented)
+│   │       └── polygonize.py     # 0.4 m erosion → outlines → triangles → navmesh dict
+│   └── tests/                    # blur, dedupe, ingest, reconstruct, floor, navmesh
 │
 ├── viewer/                       # Three.js web client (runs on any machine)
 │   ├── package.json              # three, @mkkellogg/gaussian-splats-3d, fuse.js, vite
