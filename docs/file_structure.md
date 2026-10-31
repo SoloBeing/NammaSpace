@@ -3,6 +3,8 @@
 ```
 AtomSpace/
 ├── README.md
+├── LICENSE                       # MIT, our own code only
+├── THIRD_PARTY_NOTICES.md        # MASt3R non-commercial terms, dependencies, images and sample data
 ├── .gitignore                    # ignores weights, scene working data, build artifacts
 ├── .gitattributes                # Git LFS for *.splat/*.ply/*.mp4/*.mov; LF endings for *.sh
 ├── .gitmodules                   # pins third_party/mast3r
@@ -14,6 +16,9 @@ AtomSpace/
 │   ├── setup_wsl.sh              # checks GPU (≥ sm_75, ≥ 8 GB), builds ASMK, curope, gsplat for the detected arch
 │   ├── download_weights.sh       # MASt3R + retrieval checkpoints → checkpoints/
 │   └── smoke_test.py             # GPU/arch/profile check, gsplat forward+backward, MASt3R inference
+│
+├── docs/images/                  # README figures
+├── test/testroom/frames/         # sample data: 101 keyframes, see test/README.md
 │
 ├── third_party/
 │   └── mast3r/                   # git submodule (includes dust3r)
