@@ -149,6 +149,18 @@ body {
   background: rgba(255, 255, 255, 0.6);
 }
 
+.fps-counter {
+  position: absolute;
+  top: 64px; /* just below the search box */
+  left: 16px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(17, 17, 17, 0.75);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none; /* drags here still steer the camera */
+}
+
 .search {
   position: absolute;
   top: 16px;

@@ -11,6 +11,7 @@ import { createPoiSearch } from './poi/search';
 import { loadScene } from './scene/loader';
 import { createSplatViewer } from './scene/splatRenderer';
 import { mountControlsHint } from './ui/controlsHint';
+import { mountFpsCounter } from './ui/fpsCounter';
 import { mountLoadingScreen } from './ui/loadingScreen';
 import { mountSearchBar } from './ui/searchBar';
 
@@ -27,6 +28,7 @@ async function start(app: HTMLElement, sceneName: string, admin: boolean) {
   const touch = isTouchDevice();
   mountControlsHint(app, viewer.domElement, touch);
   if (touch) mountTouchControls(app, viewer.domElement, controls);
+  viewer.onFrame(mountFpsCounter(app)); // mounted before search, so results draw over it
   const pins = createPins(viewer.scene, bundle.pois);
   let search = createPoiSearch(bundle.pois);
   let flying = false;
