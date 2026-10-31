@@ -128,7 +128,8 @@ git -C "$BUILD_DIR/asmk" checkout -q "$ASMK_REF" 2>/dev/null || {
   git -C "$BUILD_DIR/asmk" checkout -q "$ASMK_REF"
 }
 (cd "$BUILD_DIR/asmk/cython" && cythonize ./*.pyx)
-pip install -c "$TORCH_PINS" "$BUILD_DIR/asmk"
+# No build isolation: ASMK's installer imports faiss, which is only in this env.
+pip install --no-build-isolation -c "$TORCH_PINS" "$BUILD_DIR/asmk"
 
 echo "==> Building curope (optional speedup, MAX_JOBS=$MAX_JOBS)"
 if ! (cd "$ROOT/third_party/mast3r/dust3r/croco/models/curope" && python setup.py build_ext --inplace); then
