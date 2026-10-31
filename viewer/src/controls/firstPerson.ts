@@ -3,6 +3,7 @@ import { isTouchDevice } from './touch';
 
 export const WALK_SPEED_MPS = 1.4;
 
+const SPRINT_MULTIPLIER = 2.5;
 const MOUSE_SENSITIVITY = 0.002;
 const MAX_PITCH = Math.PI / 2 - 0.01;
 const MAX_STEP_SECONDS = 0.1; // after a stall, don't jump a long way in one frame
@@ -69,11 +70,13 @@ export class FirstPersonControls {
 
     const facing = this.camera.getWorldDirection(new THREE.Vector3()).setY(0).normalize();
     const right = new THREE.Vector3(-facing.z, 0, facing.x);
+    const sprinting = this.keys.has('ShiftLeft') || this.keys.has('ShiftRight');
+    const speed = sprinting ? WALK_SPEED_MPS * SPRINT_MULTIPLIER : WALK_SPEED_MPS;
     return facing
       .multiplyScalar(forward)
       .addScaledVector(right, strafe)
       .clampLength(0, 1)
-      .multiplyScalar(WALK_SPEED_MPS * Math.min(dtSeconds, MAX_STEP_SECONDS));
+      .multiplyScalar(speed * Math.min(dtSeconds, MAX_STEP_SECONDS));
   }
 
   dispose(): void {

@@ -137,6 +137,7 @@ atomspace navmesh myroom && atomspace bundle myroom
 | Action | Laptop | Phone |
 |---|---|---|
 | Walk | W A S D | Left thumb |
+| Sprint | Hold Shift | Not available |
 | Look | Click the scene, then move the mouse | Right thumb |
 | Free the cursor | Esc | Not needed |
 

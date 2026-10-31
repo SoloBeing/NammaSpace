@@ -5,6 +5,7 @@ const TOUCH_CONTROLS: [keys: string[], action: string][] = [
 
 const MOUSE_CONTROLS: [keys: string[], action: string][] = [
   [['W', 'A', 'S', 'D'], 'Walk'],
+  [['Shift'], 'Sprint'],
   [['Mouse'], 'Look'],
   [['Esc'], 'Free cursor'],
 ];
