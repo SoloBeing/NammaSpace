@@ -9,23 +9,21 @@ import { createPins } from './poi/pins';
 import { createPoiSearch } from './poi/search';
 import { loadScene } from './scene/loader';
 import { createSplatViewer } from './scene/splatRenderer';
+import { mountControlsHint } from './ui/controlsHint';
+import { mountLoadingScreen } from './ui/loadingScreen';
 import { mountSearchBar } from './ui/searchBar';
 
 async function start(app: HTMLElement, sceneName: string, admin: boolean) {
+  const loading = mountLoadingScreen(app);
   const bundle = await loadScene(sceneName);
-  const loading = document.createElement('p');
-  loading.className = 'loading';
-  loading.textContent = 'Loading scene…';
-  app.append(loading);
   const guard = bundle.navmesh ? new NavmeshGuard(bundle.navmesh) : null;
   // Without a navmesh the first camera is at the origin, already at its own height.
   const startPosition = guard ? guard.spawnPosition() : new THREE.Vector3();
-  const viewer = await createSplatViewer(app, bundle, startPosition, (percent) => {
-    loading.textContent = `Loading scene… ${Math.round(percent)}%`;
-  });
+  const viewer = await createSplatViewer(app, bundle, startPosition, loading.setProgress);
   loading.remove();
 
   const controls = new FirstPersonControls(viewer.camera, viewer.domElement);
+  mountControlsHint(app, viewer.domElement);
   const pins = createPins(viewer.scene, bundle.pois);
   let search = createPoiSearch(bundle.pois);
   let flying = false;

@@ -22,9 +22,104 @@ body {
 .loading {
   position: absolute;
   inset: 0;
-  display: grid;
-  place-items: center;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: #111;
+}
+
+.loading h1 {
   margin: 0;
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.loading p {
+  margin: 0;
+  color: #aaa;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.loading-bar {
+  width: min(280px, calc(100vw - 64px));
+  height: 6px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: #333;
+}
+
+.loading-bar div {
+  width: 0;
+  height: 100%;
+  border-radius: 3px;
+  background: #7ab8ff;
+  transition: width 0.2s ease-out;
+}
+
+.controls-hint {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  box-sizing: border-box;
+  max-width: calc(100vw - 32px);
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: rgba(17, 17, 17, 0.75);
+  font-size: 0.85rem;
+  text-align: center;
+  pointer-events: none; /* clicks must reach the canvas to capture the mouse */
+  transition: opacity 0.2s;
+}
+
+.controls-hint.locked {
+  opacity: 0;
+  transition: opacity 0.6s 4s;
+}
+
+.controls-hint.locked p {
+  display: none;
+}
+
+.controls-hint p {
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+
+.controls-hint dl {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 8px;
+  margin: 0;
+}
+
+.controls-hint dt {
+  display: flex;
+  gap: 3px;
+}
+
+.controls-hint dd {
+  margin: 0 12px 0 0;
+  color: #ccc;
+}
+
+.controls-hint dd:last-child {
+  margin-right: 0;
+}
+
+.controls-hint kbd {
+  padding: 2px 6px;
+  border: 1px solid #666;
+  border-radius: 4px;
+  font: inherit;
+  font-size: 0.75rem;
 }
 
 .search {
