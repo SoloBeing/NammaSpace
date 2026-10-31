@@ -4,6 +4,7 @@ import { mountPoiEditor } from './admin/poiEditor';
 import { mountScaleTool } from './admin/scaleTool';
 import { FirstPersonControls } from './controls/firstPerson';
 import { NavmeshGuard } from './controls/navmeshGuard';
+import { isTouchDevice, mountTouchControls } from './controls/touch';
 import { flyTo } from './poi/flyTo';
 import { createPins } from './poi/pins';
 import { createPoiSearch } from './poi/search';
@@ -23,7 +24,9 @@ async function start(app: HTMLElement, sceneName: string, admin: boolean) {
   loading.remove();
 
   const controls = new FirstPersonControls(viewer.camera, viewer.domElement);
-  mountControlsHint(app, viewer.domElement);
+  const touch = isTouchDevice();
+  mountControlsHint(app, viewer.domElement, touch);
+  if (touch) mountTouchControls(app, viewer.domElement, controls);
   const pins = createPins(viewer.scene, bundle.pois);
   let search = createPoiSearch(bundle.pois);
   let flying = false;

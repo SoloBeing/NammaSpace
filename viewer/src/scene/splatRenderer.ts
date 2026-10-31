@@ -1,5 +1,6 @@
 import { DropInViewer, SceneRevealMode } from '@mkkellogg/gaussian-splats-3d';
 import * as THREE from 'three';
+import { isTouchDevice } from '../controls/touch';
 import type { SceneBundle } from './loader';
 
 export interface SplatViewer {
@@ -23,7 +24,8 @@ export async function createSplatViewer(
   onProgress?: (percent: number) => void,
 ): Promise<SplatViewer> {
   const renderer = new THREE.WebGLRenderer({ antialias: false });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  // Overlapping splats are expensive per pixel, and phones have very dense screens.
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, isTouchDevice() ? 1.5 : 2));
   renderer.setSize(container.clientWidth, container.clientHeight);
   container.appendChild(renderer.domElement);
 

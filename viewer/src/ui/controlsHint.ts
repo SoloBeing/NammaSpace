@@ -1,17 +1,25 @@
-const CONTROLS: [keys: string[], action: string][] = [
+const TOUCH_CONTROLS: [keys: string[], action: string][] = [
+  [['Left thumb'], 'Walk'],
+  [['Right thumb'], 'Look'],
+];
+
+const MOUSE_CONTROLS: [keys: string[], action: string][] = [
   [['W', 'A', 'S', 'D'], 'Walk'],
   [['Mouse'], 'Look'],
   [['Esc'], 'Free cursor'],
 ];
 
-/** Shows how to move around; fades out once the mouse is captured, and returns when it's released. */
-export function mountControlsHint(container: HTMLElement, lockTarget: HTMLElement): void {
+/**
+ * Shows how to move around. With a mouse it fades once the mouse is captured and returns when
+ * it's released; on touch it fades for good at the first touch.
+ */
+export function mountControlsHint(container: HTMLElement, lockTarget: HTMLElement, touch: boolean): void {
   const root = document.createElement('div');
-  root.className = 'controls-hint';
+  root.className = touch ? 'controls-hint touch' : 'controls-hint';
   const prompt = document.createElement('p');
-  prompt.textContent = 'Click the scene to start';
+  prompt.textContent = touch ? 'Drag on the screen to move' : 'Click the scene to start';
   const list = document.createElement('dl');
-  for (const [keys, action] of CONTROLS) {
+  for (const [keys, action] of touch ? TOUCH_CONTROLS : MOUSE_CONTROLS) {
     const term = document.createElement('dt');
     term.append(
       ...keys.map((key) => {
@@ -27,7 +35,11 @@ export function mountControlsHint(container: HTMLElement, lockTarget: HTMLElemen
   root.append(prompt, list);
   container.append(root);
 
-  document.addEventListener('pointerlockchange', () => {
-    root.classList.toggle('locked', document.pointerLockElement === lockTarget);
-  });
+  if (touch) {
+    lockTarget.addEventListener('pointerdown', () => root.classList.add('locked'), { once: true });
+  } else {
+    document.addEventListener('pointerlockchange', () => {
+      root.classList.toggle('locked', document.pointerLockElement === lockTarget);
+    });
+  }
 }

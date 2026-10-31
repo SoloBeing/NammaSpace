@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { isTouchDevice } from './touch';
 
 export const WALK_SPEED_MPS = 1.4;
 
@@ -6,22 +7,20 @@ const MOUSE_SENSITIVITY = 0.002;
 const MAX_PITCH = Math.PI / 2 - 0.01;
 const MAX_STEP_SECONDS = 0.1; // after a stall, don't jump a long way in one frame
 
-/** WASD + pointer-lock mouse look. Rotates the camera itself; movement is only proposed, never applied. */
+/** WASD + pointer-lock mouse look, plus a touch stick fed in from outside. Rotates the camera itself; movement is only proposed, never applied. */
 export class FirstPersonControls {
   private readonly keys = new Set<string>();
   private readonly euler = new THREE.Euler(0, 0, 0, 'YXZ');
+  private readonly stick = new THREE.Vector2();
 
   private readonly onClick = () => {
-    void this.domElement.requestPointerLock();
+    // Phones have no pointer lock, and on iPhones the method doesn't exist at all.
+    if (!isTouchDevice()) void this.domElement.requestPointerLock();
   };
 
   private readonly onMouseMove = (event: MouseEvent) => {
     if (document.pointerLockElement !== this.domElement) return;
-    // Read back each time: flyTo also turns the camera.
-    this.euler.setFromQuaternion(this.camera.quaternion);
-    this.euler.y -= event.movementX * MOUSE_SENSITIVITY;
-    this.euler.x = THREE.MathUtils.clamp(this.euler.x - event.movementY * MOUSE_SENSITIVITY, -MAX_PITCH, MAX_PITCH);
-    this.camera.quaternion.setFromEuler(this.euler);
+    this.look(event.movementX * MOUSE_SENSITIVITY, event.movementY * MOUSE_SENSITIVITY);
   };
 
   private readonly onKeyDown = (event: KeyboardEvent) => {
@@ -48,10 +47,24 @@ export class FirstPersonControls {
     window.addEventListener('blur', this.onBlur);
   }
 
+  /** Turns the camera by these angles in radians: positive is right and down. */
+  look(yaw: number, pitch: number): void {
+    // Read back each time: flyTo also turns the camera.
+    this.euler.setFromQuaternion(this.camera.quaternion);
+    this.euler.y -= yaw;
+    this.euler.x = THREE.MathUtils.clamp(this.euler.x - pitch, -MAX_PITCH, MAX_PITCH);
+    this.camera.quaternion.setFromEuler(this.euler);
+  }
+
+  /** Touch stick position, each axis -1 to 1. Partway walks slower, unlike a key. */
+  setStickMove(strafe: number, forward: number): void {
+    this.stick.set(strafe, forward);
+  }
+
   /** Horizontal displacement the user is asking for this frame, in world meters. */
   desiredMove(dtSeconds: number): THREE.Vector3 {
-    const strafe = Number(this.keys.has('KeyD')) - Number(this.keys.has('KeyA'));
-    const forward = Number(this.keys.has('KeyW')) - Number(this.keys.has('KeyS'));
+    const strafe = Number(this.keys.has('KeyD')) - Number(this.keys.has('KeyA')) + this.stick.x;
+    const forward = Number(this.keys.has('KeyW')) - Number(this.keys.has('KeyS')) + this.stick.y;
     if (strafe === 0 && forward === 0) return new THREE.Vector3();
 
     const facing = this.camera.getWorldDirection(new THREE.Vector3()).setY(0).normalize();
@@ -59,7 +72,7 @@ export class FirstPersonControls {
     return facing
       .multiplyScalar(forward)
       .addScaledVector(right, strafe)
-      .normalize()
+      .clampLength(0, 1)
       .multiplyScalar(WALK_SPEED_MPS * Math.min(dtSeconds, MAX_STEP_SECONDS));
   }
 
